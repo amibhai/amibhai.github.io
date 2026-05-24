@@ -1,0 +1,383 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&family=Exo+2:wght@300;400;600&display=swap" rel="stylesheet">
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+:root{
+  --bg:#060a0f;
+  --surface:#0c1117;
+  --card:#111822;
+  --border:#1a2e45;
+  --green:#00ff88;
+  --cyan:#00cfff;
+  --red:#ff3b5c;
+  --amber:#ffb400;
+  --text:#c8d8e8;
+  --dim:#4a6478;
+  --mono:'Share Tech Mono',monospace;
+  --title:'Orbitron',monospace;
+  --body:'Exo 2',sans-serif;
+}
+body{background:var(--bg);color:var(--text);font-family:var(--body);min-height:100vh;overflow-x:hidden}
+
+.scanline{position:fixed;top:0;left:0;width:100%;height:100%;background:repeating-linear-gradient(0deg,transparent,transparent 2px,rgba(0,255,136,0.015) 2px,rgba(0,255,136,0.015) 4px);pointer-events:none;z-index:999}
+
+.grid-bg{position:fixed;top:0;left:0;width:100%;height:100%;background-image:linear-gradient(rgba(0,207,255,0.04) 1px,transparent 1px),linear-gradient(90deg,rgba(0,207,255,0.04) 1px,transparent 1px);background-size:40px 40px;pointer-events:none}
+
+header{padding:2rem 3rem 1.5rem;border-bottom:1px solid var(--border);position:relative}
+.status-bar{display:flex;align-items:center;gap:1rem;font-family:var(--mono);font-size:11px;color:var(--dim);margin-bottom:1.5rem}
+.status-bar .dot{width:8px;height:8px;border-radius:50%;background:var(--green);box-shadow:0 0 6px var(--green);animation:pulse 2s infinite}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.4}}
+.status-bar .sep{color:var(--border)}
+
+.hero{display:grid;grid-template-columns:auto 1fr;gap:2.5rem;align-items:center}
+.avatar-wrap{position:relative}
+.avatar{width:100px;height:100px;border-radius:50%;border:2px solid var(--cyan);padding:3px;position:relative}
+.avatar img{width:100%;height:100%;border-radius:50%;object-fit:cover;filter:grayscale(20%) contrast(1.1)}
+.avatar-ring{position:absolute;inset:-8px;border-radius:50%;border:1px solid rgba(0,207,255,0.3);animation:spin 8s linear infinite}
+@keyframes spin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+.avatar-ring::before{content:'';position:absolute;top:-3px;left:50%;width:6px;height:6px;background:var(--cyan);border-radius:50%;transform:translateX(-50%);box-shadow:0 0 8px var(--cyan)}
+
+.name-block h1{font-family:var(--title);font-size:2rem;font-weight:900;letter-spacing:0.05em;color:#fff;text-shadow:0 0 20px rgba(0,207,255,0.4)}
+.handle{font-family:var(--mono);font-size:13px;color:var(--cyan);margin:4px 0 10px}
+.tagline{font-size:14px;color:var(--dim);font-weight:300;max-width:480px;line-height:1.6}
+.badges{display:flex;gap:8px;margin-top:12px;flex-wrap:wrap}
+.badge{font-family:var(--mono);font-size:10px;padding:3px 10px;border-radius:2px;letter-spacing:0.08em;text-transform:uppercase}
+.badge-green{border:1px solid var(--green);color:var(--green);background:rgba(0,255,136,0.05)}
+.badge-cyan{border:1px solid var(--cyan);color:var(--cyan);background:rgba(0,207,255,0.05)}
+.badge-red{border:1px solid var(--red);color:var(--red);background:rgba(255,59,92,0.05)}
+.badge-amber{border:1px solid var(--amber);color:var(--amber);background:rgba(255,180,0,0.05)}
+
+main{padding:2.5rem 3rem;display:grid;gap:2rem}
+
+.section-label{font-family:var(--mono);font-size:11px;color:var(--cyan);letter-spacing:0.15em;text-transform:uppercase;margin-bottom:1rem;display:flex;align-items:center;gap:8px}
+.section-label::after{content:'';flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent)}
+
+.terminal-box{background:var(--surface);border:1px solid var(--border);border-radius:4px;overflow:hidden}
+.terminal-header{background:#0a0f14;padding:8px 12px;display:flex;align-items:center;gap:6px;border-bottom:1px solid var(--border)}
+.terminal-header .dot-r{width:10px;height:10px;border-radius:50%;background:#ff5f57}
+.terminal-header .dot-y{width:10px;height:10px;border-radius:50%;background:#febc2e}
+.terminal-header .dot-g{width:10px;height:10px;border-radius:50%;background:#28c840}
+.terminal-title{font-family:var(--mono);font-size:11px;color:var(--dim);margin-left:8px}
+.terminal-body{padding:1.25rem;font-family:var(--mono);font-size:13px;line-height:1.9}
+.t-prompt{color:var(--green)}
+.t-cmd{color:#fff}
+.t-out{color:var(--dim);padding-left:1rem}
+.t-val{color:var(--cyan)}
+.t-warn{color:var(--amber)}
+.t-err{color:var(--red)}
+.cursor{display:inline-block;width:8px;height:14px;background:var(--green);animation:blink 1.2s step-end infinite;vertical-align:text-bottom}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:0}}
+
+.repos-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(300px,1fr));gap:1rem}
+.repo-card{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1.25rem;transition:border-color 0.2s,transform 0.2s;position:relative;overflow:hidden;cursor:pointer}
+.repo-card:hover{border-color:var(--cyan);transform:translateY(-2px)}
+.repo-card::before{content:'';position:absolute;top:0;left:0;right:0;height:2px;background:linear-gradient(90deg,transparent,var(--cyan),transparent);opacity:0;transition:opacity 0.2s}
+.repo-card:hover::before{opacity:1}
+.repo-card.highlight{border-color:rgba(0,255,136,0.3)}
+.repo-card.highlight::before{background:linear-gradient(90deg,transparent,var(--green),transparent);opacity:0.5}
+
+.repo-icon{font-size:20px;margin-bottom:10px}
+.repo-name{font-family:var(--mono);font-size:13px;color:var(--cyan);margin-bottom:6px;display:flex;align-items:center;gap:6px}
+.repo-name .lang{font-size:10px;padding:1px 6px;border-radius:2px;border:1px solid var(--border);color:var(--dim)}
+.repo-desc{font-size:12px;color:var(--dim);line-height:1.6;margin-bottom:12px}
+.repo-tags{display:flex;gap:6px;flex-wrap:wrap}
+.repo-tag{font-family:var(--mono);font-size:10px;color:var(--dim);border:1px solid var(--border);padding:2px 7px;border-radius:2px}
+
+.skills-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:1rem}
+.skill-group{background:var(--card);border:1px solid var(--border);border-radius:4px;padding:1rem}
+.skill-group-title{font-family:var(--mono);font-size:11px;color:var(--amber);letter-spacing:0.1em;margin-bottom:10px;text-transform:uppercase}
+.skill-item{display:flex;align-items:center;gap:8px;margin-bottom:6px;font-size:12px;color:var(--text)}
+.skill-dot{width:6px;height:6px;border-radius:50%;flex-shrink:0}
+.skill-dot.green{background:var(--green);box-shadow:0 0 4px var(--green)}
+.skill-dot.cyan{background:var(--cyan);box-shadow:0 0 4px var(--cyan)}
+.skill-dot.amber{background:var(--amber);box-shadow:0 0 4px var(--amber)}
+.skill-dot.red{background:var(--red);box-shadow:0 0 4px var(--red)}
+
+.bar-wrap{display:grid;gap:10px}
+.bar-row{display:grid;grid-template-columns:130px 1fr 36px;align-items:center;gap:10px}
+.bar-label{font-family:var(--mono);font-size:11px;color:var(--dim)}
+.bar-track{height:4px;background:var(--border);border-radius:2px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;position:relative}
+.bar-fill.g{background:linear-gradient(90deg,rgba(0,255,136,0.5),var(--green))}
+.bar-fill.c{background:linear-gradient(90deg,rgba(0,207,255,0.5),var(--cyan))}
+.bar-fill.a{background:linear-gradient(90deg,rgba(255,180,0,0.5),var(--amber))}
+.bar-pct{font-family:var(--mono);font-size:11px;color:var(--dim);text-align:right}
+
+.contact-row{display:flex;gap:1rem;flex-wrap:wrap}
+.contact-btn{font-family:var(--mono);font-size:12px;padding:8px 16px;border:1px solid var(--border);border-radius:2px;color:var(--dim);background:var(--card);cursor:pointer;transition:all 0.2s;text-decoration:none;display:flex;align-items:center;gap:6px}
+.contact-btn:hover{border-color:var(--cyan);color:var(--cyan);background:rgba(0,207,255,0.05)}
+.contact-btn .icon{font-size:14px}
+
+footer{padding:1rem 3rem;border-top:1px solid var(--border);display:flex;justify-content:space-between;align-items:center;font-family:var(--mono);font-size:11px;color:var(--dim)}
+.footer-right{color:rgba(0,255,136,0.4);font-size:10px}
+
+@media(max-width:600px){
+  header{padding:1.5rem}
+  main{padding:1.5rem}
+  .hero{grid-template-columns:1fr;gap:1rem}
+  .name-block h1{font-size:1.4rem}
+}
+</style>
+</head>
+<body>
+<div class="grid-bg"></div>
+<div class="scanline"></div>
+
+<header>
+  <div class="status-bar">
+    <span class="dot"></span>
+    <span>SECURE CONNECTION ESTABLISHED</span>
+    <span class="sep">|</span>
+    <span>TLS 1.3</span>
+    <span class="sep">|</span>
+    <span>SESSION: AUTHENTICATED</span>
+    <span class="sep">|</span>
+    <span>github.com/amibhai</span>
+  </div>
+  <div class="hero">
+    <div class="avatar-wrap">
+      <div class="avatar">
+        <img src="https://avatars.githubusercontent.com/u/173665445?v=4" alt="Swastik" onerror="this.style.display='none';this.parentElement.innerHTML='<div style=\'width:100%;height:100%;border-radius:50%;background:#111822;display:flex;align-items:center;justify-content:center;font-family:Orbitron,monospace;font-size:28px;font-weight:900;color:#00cfff\'>S</div>'">
+      </div>
+      <div class="avatar-ring"></div>
+    </div>
+    <div class="name-block">
+      <h1>SWASTIK</h1>
+      <div class="handle">@amibhai &nbsp;·&nbsp; Research Intern &nbsp;·&nbsp; CS Undergrad</div>
+      <p class="tagline">Cybersecurity-focused engineer building tools at the intersection of network intelligence, threat detection, and offensive security research.</p>
+      <div class="badges">
+        <span class="badge badge-green">Honeypots</span>
+        <span class="badge badge-cyan">Network Recon</span>
+        <span class="badge badge-cyan">Linux Systems</span>
+        <span class="badge badge-red">Credential Attacks</span>
+        <span class="badge badge-amber">SOC / SIEM</span>
+        <span class="badge badge-green">Python</span>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main>
+
+  <div>
+    <div class="section-label">// system.profile</div>
+    <div class="terminal-box">
+      <div class="terminal-header">
+        <div class="dot-r"></div><div class="dot-y"></div><div class="dot-g"></div>
+        <span class="terminal-title">swastik@kali ~ $</span>
+      </div>
+      <div class="terminal-body">
+        <div><span class="t-prompt">➜ </span><span class="t-cmd">whoami --verbose</span></div>
+        <div class="t-out">name      : <span class="t-val">Swastik (amibhai)</span></div>
+        <div class="t-out">role      : <span class="t-val">Cybersecurity Researcher · Research Intern · CS Undergrad</span></div>
+        <div class="t-out">focus     : <span class="t-val">Threat Detection · Network Recon · Honeypot Telemetry · Linux</span></div>
+        <div class="t-out">contact   : <span class="t-val">swastik362004@gmail.com</span></div>
+        <br>
+        <div><span class="t-prompt">➜ </span><span class="t-cmd">cat /etc/mission.conf</span></div>
+        <div class="t-out"><span class="t-warn"># Building tools that help defenders see what attackers do.</span></div>
+        <div class="t-out"><span class="t-warn"># From honeypot telemetry to live packet capture — every byte matters.</span></div>
+        <br>
+        <div><span class="t-prompt">➜ </span><span class="t-cmd">ls -la repos/ | grep -i sec<span class="cursor"></span></span></div>
+      </div>
+    </div>
+  </div>
+
+  <div>
+    <div class="section-label">// featured.repositories</div>
+    <div class="repos-grid">
+
+      <div class="repo-card highlight" onclick="openLink('https://github.com/amibhai/Honeypot-Risk-Scoring-Model')">
+        <div class="repo-icon">🍯</div>
+        <div class="repo-name">
+          Honeypot-Risk-Scoring-Model
+          <span class="lang">Python</span>
+        </div>
+        <div class="repo-desc">Telemetry analysis pipeline ingesting honeypot logs, extracting behavioral features, and computing weighted risk scores (Low/Medium/High) visualized in Kibana for SOC triage.</div>
+        <div class="repo-tags">
+          <span class="repo-tag">Cowrie</span>
+          <span class="repo-tag">Elasticsearch</span>
+          <span class="repo-tag">Kibana</span>
+          <span class="repo-tag">Filebeat</span>
+          <span class="repo-tag">GeoIP</span>
+        </div>
+      </div>
+
+      <div class="repo-card" onclick="openLink('https://github.com/amibhai/recon-toolkit')">
+        <div class="repo-icon">🔍</div>
+        <div class="repo-name">
+          recon-toolkit
+          <span class="lang">Python</span>
+        </div>
+        <div class="repo-desc">Full-spectrum network reconnaissance suite: DNS enum, ARP/ICMP/TCP host discovery, OS fingerprinting, SYN/FIN/XMAS port scanning, CVE detection, SSL audit, and wireless monitor mode.</div>
+        <div class="repo-tags">
+          <span class="repo-tag">Scapy</span>
+          <span class="repo-tag">DNS</span>
+          <span class="repo-tag">CVE DB</span>
+          <span class="repo-tag">PCAP</span>
+          <span class="repo-tag">Wireless</span>
+        </div>
+      </div>
+
+      <div class="repo-card" onclick="openLink('https://github.com/amibhai/credential-attacks-toolkit')">
+        <div class="repo-icon">🔐</div>
+        <div class="repo-name">
+          credential-attacks-toolkit
+          <span class="lang">Python</span>
+        </div>
+        <div class="repo-desc">Authorized security testing suite for credential attacks — SSH, FTP, Web Login brute-force and dictionary attacks for red team / pen-test exercises.</div>
+        <div class="repo-tags">
+          <span class="repo-tag">SSH</span>
+          <span class="repo-tag">FTP</span>
+          <span class="repo-tag">Bruteforce</span>
+          <span class="repo-tag">Red Team</span>
+        </div>
+      </div>
+
+      <div class="repo-card" onclick="openLink('https://github.com/amibhai/HYBRID-IDS-MCP')">
+        <div class="repo-icon">🛡️</div>
+        <div class="repo-name">
+          HYBRID-IDS-MCP
+          <span class="lang">Python</span>
+        </div>
+        <div class="repo-desc">Hybrid Intrusion Detection System using the MCP protocol architecture — combining signature and anomaly-based detection for layered network threat analysis.</div>
+        <div class="repo-tags">
+          <span class="repo-tag">IDS</span>
+          <span class="repo-tag">MCP</span>
+          <span class="repo-tag">Anomaly Detection</span>
+        </div>
+      </div>
+
+      <div class="repo-card" onclick="openLink('https://github.com/amibhai/mirrorlab')">
+        <div class="repo-icon">🧪</div>
+        <div class="repo-name">
+          mirrorlab
+          <span class="lang">Python</span>
+        </div>
+        <div class="repo-desc">Security research lab environment — an experimental sandbox for building, testing, and validating security tooling and detection methodologies.</div>
+        <div class="repo-tags">
+          <span class="repo-tag">Lab</span>
+          <span class="repo-tag">Research</span>
+          <span class="repo-tag">Testing</span>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+    <div>
+      <div class="section-label">// skill.matrix</div>
+      <div class="skills-grid" style="grid-template-columns:1fr 1fr">
+        <div class="skill-group">
+          <div class="skill-group-title">Offense</div>
+          <div class="skill-item"><div class="skill-dot red"></div>Network Recon</div>
+          <div class="skill-item"><div class="skill-dot red"></div>Port Scanning</div>
+          <div class="skill-item"><div class="skill-dot red"></div>Credential Attacks</div>
+          <div class="skill-item"><div class="skill-dot red"></div>Vuln Scanning</div>
+          <div class="skill-item"><div class="skill-dot red"></div>Wireless Monitor</div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Defense</div>
+          <div class="skill-item"><div class="skill-dot green"></div>Honeypot Deploy</div>
+          <div class="skill-item"><div class="skill-dot green"></div>Risk Scoring</div>
+          <div class="skill-item"><div class="skill-dot green"></div>SOC / Triage</div>
+          <div class="skill-item"><div class="skill-dot green"></div>IDS Architecture</div>
+          <div class="skill-item"><div class="skill-dot green"></div>Threat Intel</div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Stack</div>
+          <div class="skill-item"><div class="skill-dot cyan"></div>Python</div>
+          <div class="skill-item"><div class="skill-dot cyan"></div>Linux / Kali</div>
+          <div class="skill-item"><div class="skill-dot cyan"></div>Scapy</div>
+          <div class="skill-item"><div class="skill-dot cyan"></div>Elasticsearch</div>
+          <div class="skill-item"><div class="skill-dot cyan"></div>Kibana</div>
+        </div>
+        <div class="skill-group">
+          <div class="skill-group-title">Research</div>
+          <div class="skill-item"><div class="skill-dot amber"></div>Telemetry Analysis</div>
+          <div class="skill-item"><div class="skill-dot amber"></div>Behavioral ML</div>
+          <div class="skill-item"><div class="skill-dot amber"></div>CVE Research</div>
+          <div class="skill-item"><div class="skill-dot amber"></div>Protocol Forensics</div>
+          <div class="skill-item"><div class="skill-dot amber"></div>PCAP Analysis</div>
+        </div>
+      </div>
+    </div>
+
+    <div>
+      <div class="section-label">// domain.proficiency</div>
+      <div class="terminal-box" style="padding:1.25rem">
+        <div class="bar-wrap">
+          <div class="bar-row">
+            <div class="bar-label">Threat Detection</div>
+            <div class="bar-track"><div class="bar-fill g" style="width:92%"></div></div>
+            <div class="bar-pct">92%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Network Recon</div>
+            <div class="bar-track"><div class="bar-fill g" style="width:95%"></div></div>
+            <div class="bar-pct">95%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Python / Scapy</div>
+            <div class="bar-track"><div class="bar-fill c" style="width:88%"></div></div>
+            <div class="bar-pct">88%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">ELK Stack</div>
+            <div class="bar-track"><div class="bar-fill c" style="width:78%"></div></div>
+            <div class="bar-pct">78%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Linux Systems</div>
+            <div class="bar-track"><div class="bar-fill g" style="width:90%"></div></div>
+            <div class="bar-pct">90%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">IDS / IPS</div>
+            <div class="bar-track"><div class="bar-fill a" style="width:75%"></div></div>
+            <div class="bar-pct">75%</div>
+          </div>
+          <div class="bar-row">
+            <div class="bar-label">Red Teaming</div>
+            <div class="bar-track"><div class="bar-fill a" style="width:70%"></div></div>
+            <div class="bar-pct">70%</div>
+          </div>
+        </div>
+      </div>
+
+      <div style="margin-top:1.5rem">
+        <div class="section-label">// contact.ops</div>
+        <div class="contact-row">
+          <a class="contact-btn" href="https://github.com/amibhai" target="_blank">
+            <span class="icon">⌥</span> github/amibhai
+          </a>
+          <a class="contact-btn" href="mailto:swastik362004@gmail.com">
+            <span class="icon">✉</span> swastik362004@gmail.com
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <span>SWASTIK · CYBERSECURITY RESEARCHER · INDIA</span>
+  <span class="footer-right">[ AUTHORIZED SECURITY TESTING ONLY ]</span>
+</footer>
+
+<script>
+function openLink(url){window.open(url,'_blank')}
+document.querySelectorAll('.bar-fill').forEach(el=>{
+  const w=el.style.width;
+  el.style.width='0%';
+  setTimeout(()=>{el.style.transition='width 1.2s cubic-bezier(0.4,0,0.2,1)';el.style.width=w},300)
+})
+</script>
+</body>
+</html>
